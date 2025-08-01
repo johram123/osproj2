@@ -56,15 +56,19 @@ def add_students():
 
     return jsonify({'message': 'Student added successfully' }), 201
 
-@app.route('/students', methods=['DELETE']) 
-def delete_student():
-    student_id = request.get_json().get('studentID')
-
+@app.route('/students/<int:student_id>', methods=['DELETE'])
+def delete_student(student_id):
     conn = get_db_connection()
-    conn.execute('DELETE FROM students WHERE studentID = ?', (student_id,))
+    cursor = conn.cursor()
+    
+    cursor.execute('DELETE FROM students WHERE studentID = ?', (student_id,))
+    deleted_count = cursor.rowcount
     
     conn.commit()
     conn.close()
+
+    if deleted_count == 0:
+        return jsonify({'error': 'Student not exists'}), 404
 
     return jsonify({'message': 'Student deleted successfully'}), 200
 
